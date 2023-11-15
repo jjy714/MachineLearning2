@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torchvision import transforms, datasets
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 import matplotlib.pyplot as plt
 
 # (A) Load CIFAR10 dataset as follows:
@@ -9,54 +9,45 @@ import matplotlib.pyplot as plt
 trainset = datasets.CIFAR10(root='./ data ', train=True, download=True, transform=transforms.ToTensor())
 testset = datasets.CIFAR10(root='./ data ', train=False, download=True, transform=transforms.ToTensor())
 
-
 # (B) Visualize at least one image for each class. You may need to look into how dataset is
 # implemented in PyTorch.
 # shape of the image
 
 
-iters = iter(trainset)
-imgs, labels = iters.next()
-for i in range(10):
-    if label == i:
-        plt.imshow(transforms.ToPILImage()(iters.next()[0]))
-    label = labels[i]
-    # for img, label in trainset
-
-
-plt.show()
-
-# label names
-# take first image
-# image = data_batch_1['data'][0]
-# # take first image label index
-# label = data_batch_1['labels'][0]
-# # Reshape the image
-# image = image.reshape(3,32,32)
-# # Transpose the image
-# image = image.transpose(1,2,0)
-# # Display the image
-# plt.imshow(image)
-# plt.title(label_name[label])
+# Get the labels and class names
+# fig, ax= plt.subplots(nrows= 2, ncols= 5, figsize= (18,5))
+# plt.suptitle('displaying one image of each category in train set'.upper(),y= 1.05, fontsize= 16)
 #
+# i= 0
+# for j in range(2):
+#     for k in range(5):
+#         ax[j,k].imshow(trainset.data[list(trainset.targets).index(i)])
+#         ax[j,k].axis('off')
+#         ax[j,k].set_title(i)
+#         i+=1
+#
+# plt.tight_layout()
+# plt.show()
+
 
 # (C) Split the trainset into training set and validation set with 90% : 10% ratio. Implement
 # dataloaders for CIFAR10.
 
-np.random.seed(0)
-val_ratio = 0.1
-train_size = len(trainset)
-indices = list(range(train_size))
-split_idx = int(np.floor(val_ratio * train_size))
-np.random.shuffle(indices)
-train_idx, val_idx = indices[split_idx:], indices[:split_idx]
 
-train_data = trainset.data[train_idx].float() / 255.
-train_labels = trainset.targets[train_idx]
-val_data = trainset.data[val_idx].float() / 255.
-val_labels = trainset.targets[val_idx]
-test_data = testset.data.float() / 255.
-test_labels = testset.targets
+total_size = len(trainset)
+train_size = int(0.9 * total_size)
+val_size = total_size - train_size
+
+# Use random_split to create training and validation datasets
+train_dataset, val_dataset = random_split(trainset, [train_size, val_size])
+
+train_data = torch.cat([train_dataset[i][0].unsqueeze(0) for i in range(len(train_dataset))], dim=0)
+train_label = torch.tensor([train_dataset[i][1] for i in range(len(train_dataset))])
+
+val_data = torch.cat([val_dataset[i][0].unsqueeze(0) for i in range(len(val_dataset))], dim=0)
+val_label = torch.tensor([val_dataset[i][1] for i in range(len(val_dataset))])
+test_data = testset.data
+test_label = testset.targets
 
 
 # (D) Choose any two classes. Then, make a SVM classifier (implement a loss function yourself.
@@ -65,52 +56,75 @@ test_labels = testset.targets
 
 # class = 0, 2
 
-
 class SVM:
-    def __init__(self):
-        self.w = torch.randn(3072, 1, requires_grad=True)
-        self.b = torch.randn(1, requires_grad=True)
-        self.gamma = 10
-        self.ex_class1 = 0
-        self.ex_class2 = 2
+    def __init__(self, train_data, train_label):
+        self.w = torch.randn(3072, 1)
+        self.b = torch.randn(1)
+        self.y_prime = torch.where(train_label == 0, -1, 1)
+        self.C = 1
+    def hingeloss(self, x, y):
+        # Regularizer term
+        w = self.w
+        b = self.b
 
-    def train(self, X, Y):
-        for i in X:
-            hinge_loss = torch.max(0, 1 - Y[self.ex_class2] * (i @ self.w + self.b))
+        reg = 0.5 * (w * w)
+
+        for i in range(x.shape[0]):
+            # Optimization term
+            x_ = x[i].view(3072, -1)
+            opt_term = y[i] * ((w @ x_[i]) + b)
+
+            # calculating loss
+            loss = reg + self.C * max(0, 1 - opt_term)
+        return loss[0][0]
+
+SVM = SVM(train_data, train_label)
+print(SVM.hingeloss(train_data, train_label))
 
 
-        regularization_term = 0.5 * torch.norm(self.w) ** 2
-        obj = regularization_term + self.gamma * torch.sum(hinge_loss)
-
-        return obj
-
-    def predict(self, X):
-        pass
-
-    def accuracy(self, X, Y):
-        pass
-
-
-
-#
-# # Instantiate the SVM model
-# svm_model = SVM()
-#
-# # Example usage
-# X_train = torch.randn((100, 3072))  # Replace with your actual training data
-# Y_train = torch.randint(0, 2, (100, 1)) * 2 - 1  # Binary labels (-1 or 1)
-#
-# # Train the SVM
-# loss = svm_model.train(X_train, Y_train)
-#
-# # Perform optimization steps here (missing in the provided code)
-# # Use torch.optim and optimizer.step() to update weights based on gradients
-#
-#
 # # (E) Train for 10 epochs with batch size 64.
-# train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
-# test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
-#
+
+train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
+test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
+
+
+def train_svm(X, y):
+    svm = SVM()
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    train_loader = DataLoader(list(zip(X_train, y_train)), batch_size=32)
+    val_loader = DataLoader(list(zip(X_val, y_val)), batch_size=32)
+
+    for epoch in range(10):  # 훈련은 10 에포크 진행합니다.
+        for X_batch, y_batch in train_loader:
+            output = svm.forward(X_batch)
+            loss = svm.hinge_loss(output, y_batch)
+            loss.backward()
+            svm.update_params()  # 업데이트
+
+        # 검증 과정
+        with torch.no_grad():
+            val_loss = 0
+            for X_batch, y_batch in val_loader:
+                output = svm.forward(X_batch)
+                val_loss += svm.hinge_loss(output, y_batch).mean().item()
+            print(f"Epoch {epoch + 1}, Validation Loss: {val_loss / len(val_loader)}")
+
+    return svm  # 훈련된 모델을 반환합니다.
+
+
+def evaluate_svm(svm, X_test, y_test):
+    test_loader = DataLoader(list(zip(X_test, y_test)), batch_size=32)
+    correct = 0
+    total = 0
+
+    for X_batch, y_batch in test_loader:
+        output = svm.forward(X_batch)
+        predicted = torch.sign(output)  # 예측
+        total += y_batch.size(0)  # 총 개수
+        correct += (predicted == y_batch).sum().item()  # 맞춘 개수
+
+    print('Accuracy of the network on the test data: %d %%' % (100 * correct / total))
+
 # num_of_epochs = 10
 
 # for epoch in range(num_of_epochs):
