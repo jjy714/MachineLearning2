@@ -57,27 +57,23 @@ test_label = testset.targets
 # class = 0, 2
 
 class SVM:
-    def __init__(self, title, train_data, train_label, class1):
-        self.title = title
+    def __init__(self):
         self.w = torch.randn(3072, 1)
         self.b = torch.randn(1)
-        self.x = train_data
-        self.y = train_label
-        self.class1 = class1
-        self.y_prime = torch.where(train_label == class1, -1, 1)
         self.C = 1
 
-    def hingeloss(self):
+    def title(self, title, class1):
+        print(title, "and", "class",class1)
+    def hingeloss(self, x, y, class1):
         # Regularizer term
         w = self.w
         b = self.b
-        x = self.x
-        y = self.y
+        y_prime = torch.where(y == class1, -1, 1)
 
         reg = 0.5 * torch.norm(w) ** 2
         # opt_term = y * (torch.matmul(x, self.w) + self.b)
         # x.shape[0]
-        print("HINGE LOSS for", self.title, "with label", self.class1)
+        print("HINGE LOSS for",self.title())
         for i in range(100):
             # Optimization term
             x_ = x[i].view(3072, -1)
@@ -99,14 +95,15 @@ class SVM:
 
 
 # training
-SVM = SVM("training", train_data, train_label, 2)
-print(SVM.hingeloss())
+SVM = SVM()
+SVM.title("Training", 0)
+print(SVM.hingeloss(train_data, train_label, 0))
 # Validation
-SVM = SVM("Validating", val_data, val_label, 4)
-print(SVM.hingeloss())
+SVM2 = SVM.hingeloss("Validating", val_data, val_label, 4)
+print(SVM2)
 # Evaluation
-SVM = SVM("Evaluating", test_data, test_label, 3)
-print(SVM.hingeloss())
+SVM3 = SVM.hingeloss("Evaluating", test_data, test_label, 3)
+print(SVM3)
 
 # # (E) Train for 10 epochs with batch size 64.
 
