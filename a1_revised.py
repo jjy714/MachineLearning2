@@ -3,8 +3,8 @@ import torch
 from torchvision import datasets
 import time
 
-trainset = datasets.MNIST(root='./ data ', train=True, download=True)
-testset = datasets.MNIST(root='./ data ', train=False, download=True)
+trainset = datasets.MNIST(root='./data ', train=True, download=True)
+testset = datasets.MNIST(root='./data ', train=False, download=True)
 
 # Indices for train /val splits : train_idx , valid_idx
 np.random.seed(0)
@@ -58,19 +58,18 @@ def loop_classification(datas, labels, size, ansdata):
 #
 
 def broad_classification(datas, labels, size, ansdata):
-    distance_tensor = torch.empty(0)
+    distance_list = []
     distance_idx = []
     result_idx, temp = 0, 0
     for i in range(size):
         result = 0.0
         result = torch.sum((datas[i] - ansdata)**2)
-        torch.cat([distance_tensor, result.reshape(1)], 0)
+        distance_list.append(result.item())
         distance_idx.append(labels[i])
-    temp = torch.argmin(distance_tensor)
-    temp = temp.item()
+    temp = distance_list.index(min(distance_list))
     result_idx = distance_idx[temp]
 
-    return result_idx
+    return result_idx.item()
 
 
 print("-------------------------")
@@ -78,6 +77,7 @@ print("Broadcasting start")
 start_time = time.time()
 broad_result = broad_classification(train_data, train_labels, train_size, ans_data)
 print("Broadcasting classification classifies as: ", broad_result)
+print("Answer label is: ", ans_label.item())
 print("Time took for Broadcasting is: ", time.time() - start_time)
 print("-------------------------")
 
@@ -89,13 +89,15 @@ print("-------------------------")
 
 
 def knn(datas, labels, size, anydigit, k):
-    distances_tensor = torch.empty(0)
+    distances_tensor = torch.empty(1)
+    distances_list = []
     distances_idx = []
     results = []
     for i in range(size):
         result = torch.sum((datas[i] - anydigit) ** 2)
-        torch.cat([distances_tensor, result.reshape(1)])
+        distances_list.append(result)
         distances_idx.append(labels[i])
+    distances_tensor = torch.tensor(distances_list)
     temp, index = torch.sort(distances_tensor)
     index = index[:k]
     for j in index:
@@ -110,6 +112,7 @@ print("KNN start")
 start_time = time.time()
 knn_result = knn(train_data, train_labels, train_size, ans_data, k=5)
 print("KNN classification classifies as: ", knn_result)
+print("Answer label is: ", ans_label.item())
 print("Time took for KNN is: ", time.time() - start_time)
 print("-------------------------")
 
