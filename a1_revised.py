@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torchvision import datasets
+import torch.nn.functional as F
 import time
 
 trainset = datasets.MNIST(root='./data ', train=True, download=True)
@@ -25,7 +26,9 @@ train_size = len(train_idx)
 val_size = len(val_idx)
 test_size = len(testset)
 
-ans_label, ans_data = train_labels[6], train_data[6]
+ans_idx = 1004
+
+ans_label, ans_data = train_labels[ans_idx], train_data[ans_idx]
 
 
 def loop_classification(datas, labels, size, ansdata):
@@ -101,10 +104,10 @@ def knn(datas, labels, size, anydigit, k):
     temp, index = torch.sort(distances_tensor)
     index = index[:k]
     for j in index:
-        results = distances_idx[j]
-    end = torch.mode(results)
+        results.append(distances_idx[j].item())
+    end, _ = torch.mode(torch.tensor(results))
 
-    return end
+    return end.item()
 
 
 print("-------------------------")
@@ -118,16 +121,26 @@ print("-------------------------")
 
 
 def knn_improved(datas, labels, size, anydigit, k):
-    distances_tensor = torch.empty(0)
+    distances_list = []
     distances_idx = []
     results = []
     for i in range(size):
-        distance = torch.cdist(datas[i], anydigit)
-        torch.cat([distances_tensor, distance.reshape(1)])
+        distance = F.pairwise_distance(datas[i], anydigit)
+        distances_list.append(torch.sum(distance))
         distances_idx.append(labels[i])
-    sorted_tensor, sorted_indices = torch.topk(distances_tensor, k)
+    distances_tensor = torch.tensor(distances_list)
+    sorted_tensor, sorted_indices = torch.topk(distances_tensor, k, largest=False)
     for j in sorted_indices:
-        results = distances_idx[j]
-    result = torch.mode(results)
+        results.append(distances_idx[j.item()])
+    result, _ = torch.mode(torch.tensor(results))
 
-    return result
+    return result.item()
+
+print("-------------------------")
+print("KNN improved start")
+start_time = time.time()
+knn_result = knn_improved(train_data, train_labels, train_size, ans_data, k=5)
+print("KNN classification classifies as: ", knn_result)
+print("Answer label is: ", ans_label.item())
+print("Time took for KNN is: ", time.time() - start_time)
+print("-------------------------")

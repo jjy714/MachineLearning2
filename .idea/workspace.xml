@@ -2,14 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7993b80c-c942-4016-85a9-cdc500f018ef" name="Changes" comment="Labels added&#10;CNN model added but needs adjustment.">
-      <change afterPath="$PROJECT_DIR$/data /MNIST/raw/t10k-images-idx3-ubyte" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data /MNIST/raw/t10k-images-idx3-ubyte.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data /MNIST/raw/t10k-labels-idx1-ubyte" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data /MNIST/raw/t10k-labels-idx1-ubyte.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data /MNIST/raw/train-images-idx3-ubyte" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data /MNIST/raw/train-images-idx3-ubyte.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data /MNIST/raw/train-labels-idx1-ubyte" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data /MNIST/raw/train-labels-idx1-ubyte.gz" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/a1_revised.py" beforeDir="false" afterPath="$PROJECT_DIR$/a1_revised.py" afterDir="false" />
     </list>
@@ -156,23 +148,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/a1_revised.py</url>
-          <line>99</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/a1_revised.py</url>
-          <line>104</line>
-          <option name="timeStamp" value="14" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/a1_revised.py</url>
-          <line>100</line>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
