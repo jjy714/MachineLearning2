@@ -35,5 +35,6 @@ Temporary Items
 *.icloud
 
 data/
+CIFARdata/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos
