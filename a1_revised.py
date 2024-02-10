@@ -26,7 +26,7 @@ train_size = len(train_idx)
 val_size = len(val_idx)
 test_size = len(testset)
 
-ans_idx = 812
+ans_idx = 70
 
 ans_label, ans_data = train_labels[ans_idx], train_data[ans_idx]
 
@@ -131,7 +131,7 @@ def knn_improved(datas, labels, size, anydigit, k):
     distances_tensor = torch.tensor(distances_list)
     sorted_tensor, sorted_indices = torch.topk(distances_tensor, k, largest=False)
     for j in sorted_indices:
-        results.append(distances_idx[j.item()])
+        results.append(distances_idx[j])
     result, _ = torch.mode(torch.tensor(results))
 
     return result.item()
@@ -139,7 +139,7 @@ def knn_improved(datas, labels, size, anydigit, k):
 print("-------------------------")
 print("KNN improved start")
 start_time = time.time()
-knn_result = knn_improved(train_data, train_labels, train_size, ans_data, k=3)
+knn_result = knn_improved(train_data, train_labels, train_size, ans_data, k=5)
 print("KNN classification classifies as: ", knn_result)
 print("Answer label is: ", ans_label.item())
 print("Time took for KNN is: ", time.time() - start_time)

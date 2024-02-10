@@ -3,9 +3,38 @@ import torch
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader, random_split
 import matplotlib.pyplot as plt
+from torch.optim import SGD
 
 trainset = datasets.CIFAR10(root='./CIFARdata', train=True, download=True, transform=transforms.ToTensor())
 testset = datasets.CIFAR10(root='./CIFARdata', train=False, download=True, transform=transforms.ToTensor())
+
+labels_dict = {
+    0: 'airplane',
+    1: 'automobile',
+    2: 'bird',
+    3: 'cat',
+    4: 'deer',
+    5: 'dog',
+    6: 'frog',
+    7: 'horse',
+    8: 'ship',
+    9: 'truck'}
+
+
+def visualize_image(data):
+    figure = plt.figure(figsize=(8, 8))
+    cols, rows = 3, 3
+    for i in range(1, cols * rows + 1):
+        sample_idx = torch.randint(len(data), size=(1,)).item()
+        img, label = data[sample_idx]
+        figure.add_subplot(rows, cols, i)
+        plt.title(labels_dict[label])
+        plt.axis("off")
+        plt.imshow(img.T.squeeze(), cmap="gray")
+    plt.show()
+
+
+visualize_image(trainset)
 
 total_size = len(trainset)
 train_size = int(0.9 * total_size)
@@ -19,34 +48,88 @@ trainloader = DataLoader(train_dataset, shuffle=True)
 valloader = DataLoader(val_dataset, shuffle=True)
 testloader = DataLoader(testset, shuffle=False)
 
+anyclass1, anyclass2 = 3, 7
+ans_data1, ans_label1 = enumerate(trainloader[anyclass1])
+ans_data2, ans_label2 = enumerate(trainloader[anyclass2])
 
-def visualize_image(data):
-    global img, label
-    figure = plt.figure(figsize=(8, 8))
-    cols, rows = 3, 3
-    labels_dict = {0: 'airplane',
-                   1: 'automobile',
-                   2: 'bird',
-                   3: 'cat',
-                   4: 'deer',
-                   5: 'dog',
-                   6: 'frog',
-                   7: 'horse',
-                   8: 'ship',
-                   9: 'truck'}
 
-    for i in range(1, cols * rows + 1):
-        overlapped = False
-        label_overlap = 0
-        while not overlapped:
-            sample_idx = torch.randint(len(data), size=(1,)).item()
-            img, label = data[sample_idx]
-            if label != label_overlap:
-                overlapped = False
-            label_overlap = label
-        figure.add_subplot(rows, cols, i)
-        plt.axis("off")
-        plt.imshow(img.squeeze(), cmap="gray")
-    plt.show()
+# torch.where
 
-visualize_image(trainloader)
+# if yi >=1 -> target1
+# if yi <= -1 -> target2
+
+# if ans (1 or -1) and data label calcuation results in a correct answer, pass
+# else, if the result is not matching, adjust the w and b value.
+
+
+# update w and b to calculate to a result of 1
+class svm:
+    def __init__(self,  c=1.0):
+        self.w = 0
+        self.b = 0
+        self.c = c
+        self.zero = 0
+
+
+    def classifier(self, data):
+        result = data * self.w[0] + self.b
+        return torch.sign(result)
+
+    def hingeloss(self, w, b, data, label):
+        w, b = self.parameters()
+        zero = self.zero
+        data_size = len(data)
+
+        regularizer = 0.5 * w * w
+        # for i in range(data_size):
+        #     ans = -1
+        #     if data[i] is not ans_label1 or ans_label2:
+        #         continue
+        #     else:
+        #         if data[i] is ans_label1:
+        #             ans = 1
+        #             result = torch.max(zero, 1 - ans * (w.T * data - b))
+        #         if data[i] is ans_label2:
+        #             result = torch.max(zero, 1 - ans * (w.T * data - b))
+        for i in range(data_size):
+            term = label[i] * (w.T * data[i]) + b
+
+            loss = regularizer + self.c * torch.max(zero, 1 - term)
+
+        return loss
+
+    def loss(self):
+        # t = yfx
+        # if t >= 1 -> answer correct, no need to weigh error
+        # if 0 < t < 1 -> answer not correct but within error margin, grant 1 - t error
+        # if t < 0 -> answer is wrong. Grant 1 - t error.
+
+        # IN function, => h(t) = max(0, 1-t)
+
+        pass
+
+    def parameters(self):
+        w = torch.
+        return self.w, self.b
+
+
+
+model = svm(train)
+epoch = 10
+batch_size = 64
+learning_rate = 0.1
+
+optimizer = SGD(model.parameters(),lr=learning_rate )
+loss_fn = model.hingeloss()
+optimizer.step()
+
+
+
+def train():
+    loss = []
+
+    for epochs in range(epoch):
+
+        for X, y in trainloader:
+            prediction = svm.classifier(X)
+            model.hingeloss(X, y)
