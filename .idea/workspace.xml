@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="7993b80c-c942-4016-85a9-cdc500f018ef" name="Changes" comment="Labels added&#10;CNN model added but needs adjustment.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/a1_revised.py" beforeDir="false" afterPath="$PROJECT_DIR$/a1_revised.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/a2_revised.py" beforeDir="false" afterPath="$PROJECT_DIR$/a2_revised.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

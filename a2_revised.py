@@ -63,19 +63,24 @@ ans_data2, ans_label2 = enumerate(trainloader[anyclass2])
 
 
 # update w and b to calculate to a result of 1
-class svm:
-    def __init__(self,  c=1.0):
-        self.w = 0
-        self.b = 0
-        self.c = c
-        self.zero = 0
+class svm(torch.nn.Module):
+    def __init__(self):
+        super(svm, self).__init__()
 
 
     def classifier(self, data):
-        result = data * self.w[0] + self.b
+        w, b = self.parameters()
+        result = data * w + b
         return torch.sign(result)
+    def data_size(self, data):
+        if data == 'train':
+            return train_size
+        elif data == 'validation':
+            return val_size
+        elif data == 'test':
+            return len(testset)
 
-    def hingeloss(self, w, b, data, label):
+    def hingeloss(self, data, label):
         w, b = self.parameters()
         zero = self.zero
         data_size = len(data)
@@ -93,7 +98,6 @@ class svm:
         #             result = torch.max(zero, 1 - ans * (w.T * data - b))
         for i in range(data_size):
             term = label[i] * (w.T * data[i]) + b
-
             loss = regularizer + self.c * torch.max(zero, 1 - term)
 
         return loss
@@ -109,12 +113,13 @@ class svm:
         pass
 
     def parameters(self):
-        w = torch.
+        w = torch.rand()
+        b = torch.rand()
         return self.w, self.b
 
 
 
-model = svm(train)
+model = svm()
 epoch = 10
 batch_size = 64
 learning_rate = 0.1
@@ -126,10 +131,25 @@ optimizer.step()
 
 
 def train():
-    loss = []
+    size = train_size
 
     for epochs in range(epoch):
-
         for X, y in trainloader:
+            optimizer.zero_grad()
             prediction = svm.classifier(X)
-            model.hingeloss(X, y)
+            loss = model.hingeloss(X, y)
+            loss.backward()
+            optimizer.step()
+        return loss
+
+def validation():
+    size = val_size
+
+    for epochs in range(epoch):
+        for X, y in valloader:
+            optimizer.zero_grad()
+            prediction = svm.classifier(X)
+            loss = model.hingeloss(X, y)
+            loss.backward()
+            optimizer.step()
+        return loss
