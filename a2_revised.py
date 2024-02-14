@@ -49,8 +49,7 @@ valloader = DataLoader(val_dataset, shuffle=True)
 testloader = DataLoader(testset, shuffle=False)
 
 anyclass1, anyclass2 = 3, 7
-ans_data1, ans_label1 = enumerate(trainloader[anyclass1])
-ans_data2, ans_label2 = enumerate(trainloader[anyclass2])
+
 
 
 # torch.where
@@ -67,23 +66,14 @@ class svm(torch.nn.Module):
     def __init__(self):
         super(svm, self).__init__()
 
-
     def classifier(self, data):
         w, b = self.parameters()
         result = data * w + b
         return torch.sign(result)
-    def data_size(self, data):
-        if data == 'train':
-            return train_size
-        elif data == 'validation':
-            return val_size
-        elif data == 'test':
-            return len(testset)
 
     def hingeloss(self, data, label):
         w, b = self.parameters()
         zero = self.zero
-        data_size = len(data)
 
         regularizer = 0.5 * w * w
         # for i in range(data_size):
@@ -96,21 +86,10 @@ class svm(torch.nn.Module):
         #             result = torch.max(zero, 1 - ans * (w.T * data - b))
         #         if data[i] is ans_label2:
         #             result = torch.max(zero, 1 - ans * (w.T * data - b))
-        for i in range(data_size):
-            term = label[i] * (w.T * data[i]) + b
-            loss = regularizer + self.c * torch.max(zero, 1 - term)
+        term = label * (w.T * data) + b
+        loss = regularizer + self.c * torch.max(zero, 1 - term)
 
         return loss
-
-    def loss(self):
-        # t = yfx
-        # if t >= 1 -> answer correct, no need to weigh error
-        # if 0 < t < 1 -> answer not correct but within error margin, grant 1 - t error
-        # if t < 0 -> answer is wrong. Grant 1 - t error.
-
-        # IN function, => h(t) = max(0, 1-t)
-
-        pass
 
     def parameters(self):
         w = torch.rand()
@@ -118,29 +97,35 @@ class svm(torch.nn.Module):
         return self.w, self.b
 
 
-
 model = svm()
 epoch = 10
 batch_size = 64
 learning_rate = 0.1
 
-optimizer = SGD(model.parameters(),lr=learning_rate )
+optimizer = SGD(model.parameters(), lr=learning_rate)
 loss_fn = model.hingeloss()
 optimizer.step()
-
 
 
 def train():
     size = train_size
 
     for epochs in range(epoch):
+        print("Epoch: ", epochs)
         for X, y in trainloader:
+            if y == anyclass1:
+                y = -1
+            elif y == anyclass2:
+                y = 1
+            else:
+                continue
             optimizer.zero_grad()
             prediction = svm.classifier(X)
-            loss = model.hingeloss(X, y)
+            loss = model.hingeloss(prediction, y)
             loss.backward()
             optimizer.step()
-        return loss
+        print("The loss is ", loss)
+
 
 def validation():
     size = val_size
@@ -153,3 +138,6 @@ def validation():
             loss.backward()
             optimizer.step()
         return loss
+
+
+train()
