@@ -125,7 +125,7 @@ def knn_improved(datas, labels, size, anydigit, k):
     distances_idx = []
     results = []
     for i in range(size):
-        distance = F.pairwise_distance(datas[i], anydigit)
+        distance = F.pairwise_distance(datas[i], anydigit, p=1)
         distances_list.append(torch.sum(distance))
         distances_idx.append(labels[i])
     distances_tensor = torch.tensor(distances_list)

@@ -2,7 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7993b80c-c942-4016-85a9-cdc500f018ef" name="Changes" comment="Labels added&#10;CNN model added but needs adjustment.">
+      <change afterPath="$PROJECT_DIR$/.ipynb_checkpoints/A1_notebook-checkpoint.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.ipynb_checkpoints/A2_notebook-checkpoint.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/A1_notebook.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/A2_notebook.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Reports/A1_report.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/a1_revised.py" beforeDir="false" afterPath="$PROJECT_DIR$/a1_revised.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/a2_revised.py" beforeDir="false" afterPath="$PROJECT_DIR$/a2_revised.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scratch.py" beforeDir="false" afterPath="$PROJECT_DIR$/scratch.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,13 +155,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/a2_revised.py</url>
-          <line>95</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">

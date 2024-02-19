@@ -1,5 +1,4 @@
 
 
-import torch
-
-print(torch.ones(32,32,3))
+checkbox = [0,0,0,0,0,0,0,0,0,0]
+print(checkbox)

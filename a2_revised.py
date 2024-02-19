@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader, random_split
@@ -24,15 +23,24 @@ labels_dict = {
 
 
 def visualize_image(data):
-    figure = plt.figure(figsize=(8, 8))
+    figure = plt.figure(figsize=(16, 16))
     cols, rows = 3, 3
+    check_box = [0 for i in range(10)]
+    img, label = 0, 0
     for i in range(1, cols * rows + 1):
-        sample_idx = torch.randint(len(data), size=(1,)).item()
-        img, label = data[sample_idx]
+        for j in range(len(trainset)):
+            img, label = data[j]
+            if check_box[label] == 1:
+                break
+            else:
+                check_box[label] = 1
+        # sample_idx = torch.randint(len(data), size=(1,)).item()
+        # img, label = data[sample_idx]
         figure.add_subplot(rows, cols, i)
         plt.title(labels_dict[label])
         plt.axis("off")
-        plt.imshow(img.T.squeeze(), cmap="gray")
+        img = img.permute(1, 2, 0)
+        plt.imshow(img.squeeze(), cmap='gray')
     plt.show()
 
 
