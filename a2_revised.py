@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from torch.optim import SGD
 import torch.nn
 import time
+import numpy as np
+import random
 
 trainset = datasets.CIFAR10(root='./CIFARdata', train=True, download=True, transform=transforms.ToTensor())
 testset = datasets.CIFAR10(root='./CIFARdata', train=False, download=True, transform=transforms.ToTensor())
@@ -23,7 +25,7 @@ labels_dict = {
 
 
 def visualize_image(data):
-    figure = plt.figure(figsize=(16, 16))
+    figure = plt.figure(figsize=(8, 8))
     cols, rows = 3, 3
     check_box = [0 for i in range(10)]
     img, label = 0, 0
@@ -31,11 +33,10 @@ def visualize_image(data):
         for j in range(len(trainset)):
             img, label = data[j]
             if check_box[label] == 1:
-                break
+                continue
             else:
                 check_box[label] = 1
-        # sample_idx = torch.randint(len(data), size=(1,)).item()
-        # img, label = data[sample_idx]
+                break
         figure.add_subplot(rows, cols, i)
         plt.title(labels_dict[label])
         plt.axis("off")
@@ -44,7 +45,7 @@ def visualize_image(data):
     plt.show()
 
 
-visualize_image(trainset)
+# visualize_image(trainset)
 
 total_size = len(trainset)
 train_size = int(0.9 * total_size)
@@ -83,9 +84,8 @@ class svm(torch.nn.Module):
         #             result = torch.max(zero, 1 - ans * (w.T * data - b))
         #         if data[i] is ans_label2:
         #             result = torch.max(zero, 1 - ans * (w.T * data - b))
-        loss = torch.mean(torch.max(zero, 1 - label * data))
+        loss = torch.mean(torch.clamp(1 - data * label, min=0))
         return loss
-
 
 
 model = svm()
@@ -95,25 +95,24 @@ learning_rate = 0.001
 optimizer = SGD(model.parameters(), lr=learning_rate)
 
 
-
-def train(model, optimizer):
+def train(model, optimizer, datas):
     size = train_size
     n = 1
     model.train()
 
-    for batch, (X, y) in enumerate(trainloader):
-        label=0
+    for batch, (X, y) in enumerate(datas):
+        label = 0
         for i in y:
             if i == anyclass1:
-                label = -1
-            elif i == anyclass2:
                 label = 1
+            elif i == anyclass2:
+                label = -1
             else:
                 continue
-        if label != anyclass1 and label != anyclass2: continue
+
         optimizer.zero_grad()
         prediction = model(X)
-        loss = model.hingeloss(prediction, y)
+        loss = model.hingeloss(prediction, label)
         loss.backward()
         optimizer.step()
         if batch % batch_size == 0:
@@ -121,35 +120,81 @@ def train(model, optimizer):
             print(f"Training loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
 
-
-def validation(model, optimizer):
+def validation(model):
     size = val_size
     n = 1
-    for batch, (X, y) in enumerate(valloader):
-        start_time = time.time()
-        if y == anyclass1:
-            y = -1
-        elif y == anyclass2:
-            y = 1
-        else:
-            continue
-        optimizer.zero_grad()
-        prediction = model.classifier(X)
-        loss = model.hingeloss(prediction, y)
-        loss.backward()
-        optimizer.step()
-        if batch % batch_size == 0:
-            loss, current = loss.item(), (batch + 1) * len(X)
-            print(f"Training loss: {loss:>7f}  [{current:>5d}/{size:>5d}] at step{n}")
+    model.eval()
+    val_loss, correct = 0, 0
+    num_batches = len(valloader)
 
-    n += 1
+    with torch.no_grad():
+        for X, y in valloader:
+            if y == anyclass1:
+                y = 1
+            elif y == anyclass2:
+                y = -1
+            else:
+                continue
+            pred = model(X)
+            val_loss += model.hingeloss(pred, y.float()).item()
+            correct += ((pred > 0.5) == y).type(torch.float).sum().item()
+
+    val_loss /= num_batches
+    correct /= size
+    print(f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {val_loss:>8f} \n")
+
+
+# def classification(model, data):
+#     list_a = []
+#
+#     label = 0
+#     datas, label2 = data
+#     if label2 == anyclass1:
+#         label = 1
+#     elif label2 == anyclass2:
+#         label = -1
+#     else:
+#         return False
+#     print(label * model(datas))
+#     _, result = label * model(datas)
+#     ans = torch.max (result, dim=1)
+#     return ans
+
+# for i in range(10):
+#     idx = random.randint(0, 2000)
+#     print(f"{i + 1}th attempt")
+#     print(f"{idx}'s label")
+#     print(classification(model, trainloader.dataset[idx]))
+
+
+# for epoch in range(epoch):
+#
+#     print("training without normalization")
+#     start_time = time.time()
+#     print(f'Epoch {epoch + 1}')
+#     train(model, optimizer, trainloader)
+#     print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
+
+train_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))])
+
+#
+trainset = datasets.CIFAR10(root='./CIFARdata', train=True, download=True, transform=train_transform)
+train_dataset, val_dataset = random_split(trainset, [train_size, val_size])
+
+trainloader2 = DataLoader(train_dataset, batch_size=64, shuffle=True)
+valloader = DataLoader(val_dataset, shuffle=True)
 
 
 
+
+
+print("Normalized data training")
 for epoch in range(epoch):
-    n = 1
     start_time = time.time()
     print(f'Epoch {epoch + 1}')
-    train(model, optimizer)
-    print(f'Time took for step [{n}]: {(time.time() - start_time) / 60:>0.2f} mins')
-    n += 1
+    train(model, optimizer, trainloader2)
+    print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
+
+validation(model)
