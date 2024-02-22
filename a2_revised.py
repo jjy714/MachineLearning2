@@ -73,7 +73,7 @@ class svm(torch.nn.Module):
         return fd
 
     def hingeloss(self, data, label):
-        zero = torch.zeros(1)
+        w, c = self.fc.weight.squeeze(), 0.1
         # for i in range(data_size):
         #     ans = -1
         #     if data[i] is not ans_label1 or ans_label2:
@@ -85,11 +85,18 @@ class svm(torch.nn.Module):
         #         if data[i] is ans_label2:
         #             result = torch.max(zero, 1 - ans * (w.T * data - b))
         loss = torch.mean(torch.clamp(1 - data * label, min=0))
+        loss += torch.sum(w * w) * 0.5 * c
         return loss
+
+#
+# X_prac, y = trainloader.dataset[10]
+# model = svm()
+# loss = model.hingeloss(X_prac, y)
+# print(loss)
 
 
 model = svm()
-epoch = 10
+epoch = 20
 batch_size = 64
 learning_rate = 0.001
 optimizer = SGD(model.parameters(), lr=learning_rate)
@@ -97,7 +104,6 @@ optimizer = SGD(model.parameters(), lr=learning_rate)
 
 def train(model, optimizer, datas):
     size = train_size
-    n = 1
     model.train()
 
     for batch, (X, y) in enumerate(datas):
@@ -136,12 +142,44 @@ def validation(model):
             else:
                 continue
             pred = model(X)
-            val_loss += model.hingeloss(pred, y.float()).item()
-            correct += ((pred > 0.5) == y).type(torch.float).sum().item()
+            val_loss += model.hingeloss(pred, y).item()
+            pred = torch.mean(pred)
+            if pred > 1 and y == 1:
+                correct += 1
+            elif pred < 1 and y == -1:
+                correct += 1
+            else:
+                continue
 
     val_loss /= num_batches
     correct /= size
-    print(f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {val_loss:>8f} \n")
+
+    print(f"Validation Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {val_loss:>8f} \n")
+
+def test(model):
+    size = len(testset)
+    n = 1
+    model.eval()
+    val_loss, correct = 0, 0
+    num_batches = len(testloader)
+
+    with torch.no_grad():
+        for X, y in testloader:
+            if y == anyclass1:
+                y = 1
+            elif y == anyclass2:
+                y = -1
+            else:
+                continue
+            pred = model(X)
+            val_loss += model.hingeloss(pred, y).item()
+            correct += ((pred > 0.5) == y).sum().item()
+
+    val_loss /= num_batches
+    correct /= size
+    print(f"Test Error: \n Accuracy: {(100 * correct):>0.2f}%, Avg loss: {val_loss:>8f} \n")
+
+
 
 
 # def classification(model, data):
@@ -167,9 +205,9 @@ def validation(model):
 #     print(classification(model, trainloader.dataset[idx]))
 
 
+print("training without normalization")
 # for epoch in range(epoch):
 #
-#     print("training without normalization")
 #     start_time = time.time()
 #     print(f'Epoch {epoch + 1}')
 #     train(model, optimizer, trainloader)
@@ -189,12 +227,13 @@ valloader = DataLoader(val_dataset, shuffle=True)
 
 
 
-
-print("Normalized data training")
-for epoch in range(epoch):
-    start_time = time.time()
-    print(f'Epoch {epoch + 1}')
-    train(model, optimizer, trainloader2)
-    print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
+#
+# print("Normalized data training")
+# for epoch in range(epoch):
+#     start_time = time.time()
+#     print(f'Epoch {epoch + 1}')
+#     train(model, optimizer, trainloader2)
+#     print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
 
 validation(model)
+test(model)
