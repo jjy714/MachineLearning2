@@ -57,10 +57,10 @@ train_dataset, val_dataset = random_split(trainset, [train_size, val_size])
 # label shape[0] = (1)
 
 trainloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-valloader = DataLoader(val_dataset, shuffle=True)
+valloader = DataLoader(val_dataset, shuffle=False)
 testloader = DataLoader(testset, shuffle=False)
 
-anyclass1, anyclass2 = 3, 7
+anyclass1, anyclass2 = 4, 8
 
 
 class svm(torch.nn.Module):
@@ -73,7 +73,7 @@ class svm(torch.nn.Module):
         return fd
 
     def hingeloss(self, data, label):
-        w, c = self.fc.weight.squeeze(), 0.1
+        w, c = self.fc.weight.squeeze(), 0.01
         # for i in range(data_size):
         #     ans = -1
         #     if data[i] is not ans_label1 or ans_label2:
@@ -88,11 +88,14 @@ class svm(torch.nn.Module):
         loss += torch.sum(w * w) * 0.5 * c
         return loss
 
+    def loss_fn(self, data, label):
+        return torch.mean(torch.clamp(1 - data * label, min=0))
+
 
 model = svm()
 epoch = 10
 batch_size = 64
-learning_rate = 0.005
+learning_rate = 0.01
 optimizer = SGD(model.parameters(), lr=learning_rate)
 
 
@@ -122,7 +125,6 @@ def train(model, optimizer, datas):
 
 def validation(model):
     size = val_size
-    n = 1
     model.eval()
     val_loss, correct = 0, 0
     num_batches = len(valloader)
@@ -137,8 +139,8 @@ def validation(model):
                 continue
             pred = model(X)
             val_loss += model.hingeloss(pred, y).item()
-            pred = torch.mean(pred)
-            correct += (pred.view(-1).float() == y).sum()
+            if model.loss_fn(pred, y) > 0:
+                correct += 1
             # if pred > 1 and y == 1:
             #     correct += 1
             # elif pred < 0 and y == -1:
@@ -170,13 +172,8 @@ def test(model):
                 continue
             pred = model(X)
             val_loss += model.hingeloss(pred, y).item()
-            pred = torch.mean(pred)
-            if pred > 1 and y == 1:
+            if model.loss_fn(pred, y) > 0:
                 correct += 1
-            elif pred < 0 and y == -1:
-                correct += 1
-            else:
-                continue
 
     val_loss /= num_batches
     print(f"Total number: {size}, correct: {correct} ")
@@ -231,18 +228,18 @@ trainset = datasets.CIFAR10(root='./CIFARdata', train=True, download=True, trans
 train_dataset, val_dataset = random_split(trainset, [train_size, val_size])
 
 trainloader2 = DataLoader(train_dataset, batch_size=64, shuffle=True)
-valloader = DataLoader(val_dataset, shuffle=True)
+valloader = DataLoader(val_dataset, shuffle=False)
 
-# # Training for normalized data
-# print("Normalized data training")
-# for epoch in range(epoch):
-#     start_time = time.time()
-#     print(f'Epoch {epoch + 1}')
-#     train(model, optimizer, trainloader2)
-#     print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
+# Training for normalized data
+print("Normalized data training")
+for epoch in range(epoch):
+    start_time = time.time()
+    print(f'Epoch {epoch + 1}')
+    train(model, optimizer, trainloader2)
+    print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
 
 # Validation for normalized data
-# validation(model)
-#
-# # Testing for noramlized data
-# test(model)
+validation(model)
+
+# Testing for noramlized data
+test(model)
