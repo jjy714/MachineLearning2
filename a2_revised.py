@@ -88,17 +88,11 @@ class svm(torch.nn.Module):
         loss += torch.sum(w * w) * 0.5 * c
         return loss
 
-#
-# X_prac, y = trainloader.dataset[10]
-# model = svm()
-# loss = model.hingeloss(X_prac, y)
-# print(loss)
-
 
 model = svm()
-epoch = 20
+epoch = 10
 batch_size = 64
-learning_rate = 0.001
+learning_rate = 0.005
 optimizer = SGD(model.parameters(), lr=learning_rate)
 
 
@@ -144,17 +138,20 @@ def validation(model):
             pred = model(X)
             val_loss += model.hingeloss(pred, y).item()
             pred = torch.mean(pred)
-            if pred > 1 and y == 1:
-                correct += 1
-            elif pred < 1 and y == -1:
-                correct += 1
-            else:
-                continue
+            correct += (pred.view(-1).float() == y).sum()
+            # if pred > 1 and y == 1:
+            #     correct += 1
+            # elif pred < 0 and y == -1:
+            #     correct += 1
+            # else:
+            #     continue
 
     val_loss /= num_batches
+    print(f"Total number: {size}, correct: {correct} ")
     correct /= size
 
-    print(f"Validation Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {val_loss:>8f} \n")
+    print(f"Validation Error: \n Accuracy: {(100 * correct)}%, Avg loss: {val_loss:>8f} \n")
+
 
 def test(model):
     size = len(testset)
@@ -173,13 +170,18 @@ def test(model):
                 continue
             pred = model(X)
             val_loss += model.hingeloss(pred, y).item()
-            correct += ((pred > 0.5) == y).sum().item()
+            pred = torch.mean(pred)
+            if pred > 1 and y == 1:
+                correct += 1
+            elif pred < 0 and y == -1:
+                correct += 1
+            else:
+                continue
 
     val_loss /= num_batches
+    print(f"Total number: {size}, correct: {correct} ")
     correct /= size
-    print(f"Test Error: \n Accuracy: {(100 * correct):>0.2f}%, Avg loss: {val_loss:>8f} \n")
-
-
+    print(f"Test Error: \n Accuracy: {(100 * correct)}%, Avg loss: {val_loss:>8f} \n")
 
 
 # def classification(model, data):
@@ -205,29 +207,33 @@ def test(model):
 #     print(classification(model, trainloader.dataset[idx]))
 
 
-print("training without normalization")
-# for epoch in range(epoch):
-#
-#     start_time = time.time()
-#     print(f'Epoch {epoch + 1}')
-#     train(model, optimizer, trainloader)
-#     print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
+# Training Epoch start
+
+print("Training without Normalization")
+for epoch in range(epoch):
+    start_time = time.time()
+    print(f'Epoch {epoch + 1}')
+    train(model, optimizer, trainloader)
+    print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
+
+# Validation
+validation(model)
+# Testing
+test(model)
+
+# Train data normalization
 
 train_transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))])
 
-#
 trainset = datasets.CIFAR10(root='./CIFARdata', train=True, download=True, transform=train_transform)
 train_dataset, val_dataset = random_split(trainset, [train_size, val_size])
 
 trainloader2 = DataLoader(train_dataset, batch_size=64, shuffle=True)
 valloader = DataLoader(val_dataset, shuffle=True)
 
-
-
-
-#
+# # Training for normalized data
 # print("Normalized data training")
 # for epoch in range(epoch):
 #     start_time = time.time()
@@ -235,5 +241,8 @@ valloader = DataLoader(val_dataset, shuffle=True)
 #     train(model, optimizer, trainloader2)
 #     print(f'Time took for step [{epoch}]: {(time.time() - start_time) / 60:>0.2f} mins')
 
-validation(model)
-test(model)
+# Validation for normalized data
+# validation(model)
+#
+# # Testing for noramlized data
+# test(model)
