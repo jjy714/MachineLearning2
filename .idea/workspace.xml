@@ -2,12 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7993b80c-c942-4016-85a9-cdc500f018ef" name="Changes" comment="Labels added&#10;CNN model added but needs adjustment.">
+      <change afterPath="$PROJECT_DIR$/A1_A2.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/JupyterNotebook/A1_notebook.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/JupyterNotebook/A2_notebook.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/RawFiles/a1_revised.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/RawFiles/a2_revised.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/A2_notebook-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/A2_notebook-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/A1_notebook.ipynb" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/A2_notebook.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/A2_notebook.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Reports/A2_report.docx" beforeDir="false" afterPath="$PROJECT_DIR$/Reports/A2_report.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Untitled.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/a2_revised.py" beforeDir="false" afterPath="$PROJECT_DIR$/a2_revised.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/a1_revised.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/a2_revised.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
